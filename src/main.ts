@@ -5,6 +5,7 @@ import { Client, GatewayIntentBits, Partials } from "npm:discord.js";
 import { CommandKit } from "npm:commandkit";
 import { connectDatabase } from "./database/connect.ts";
 
+
 connectDatabase();
 
 const client = new Client({
@@ -28,4 +29,4 @@ new CommandKit({
   bulkRegister: true,
 });
 
-client.login(Deno.env.get("TOKEN"));
+void client.login(Deno.env.get("TOKEN"));

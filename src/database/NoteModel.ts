@@ -11,7 +11,7 @@ const noteSchema = new Schema(
       required: true,
       enum: ["public", "private"],
       default: "public",
-    }
+    },
   },
   { timestamps: true }
 );
