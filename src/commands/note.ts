@@ -197,7 +197,8 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
                 .join(" ")}
               `
               )
-              .setColor("Greyple"),
+              .setColor("Greyple")
+              .setFooter({text: "/note view id:<id>"}),
           ],
         });
       }
