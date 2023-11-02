@@ -19,11 +19,11 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     .setDescription(
       `Here are all my commands: \n${commands
         .map((cmd) => {
-          return `**/${cmd.name}**: \`${cmd.description}\` ${
+          return `**${cmd.name}**: \`${cmd.description}\` ${
             cmd.options.length > 2
               ? `\n${cmd.options
                   .map((option) => {
-                    return `> **/${option.name}** - \`${option.description}\`\n`;
+                    return `> **${option.name}** - \`${option.description}\`\n`;
                   })
                   .join(" ")}`
               : ""
