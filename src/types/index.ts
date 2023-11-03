@@ -5,3 +5,9 @@ export interface Note {
   createdAt: Date; // Note creation date
   updatedAt: Date; // Note update date
 }
+
+export interface Activities {
+  name: "custom";
+  state: string;
+  type: any;
+}
