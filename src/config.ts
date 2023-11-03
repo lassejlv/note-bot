@@ -1,9 +1,11 @@
 export const config: {
+  version: string;
   times: {
     name: string;
     value: number;
   }[];
 } = {
+  version: "0.0.2",
   times: [
     {
       name: "1 minute",

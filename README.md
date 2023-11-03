@@ -10,8 +10,9 @@ Read this to install deno **https://docs.deno.com/runtime/manual/getting_started
 
 Create a file called **.env** and add the following variables:
 
-* TOKEN="discord_toke"
-* DATABASE_URL="your_mongodb_uri"
+- TOKEN="discord_toke"
+- DATABASE_URL="your_mongodb_uri"
+- INVITE="your_discord_bot_invite_url"
 
 ## Running The Project
 

@@ -16,8 +16,3 @@ export interface Activities {
   state: string;
   type: any;
 }
-
-export interface Time {
-  name: string;
-  value: number;
-}
