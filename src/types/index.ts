@@ -14,5 +14,10 @@ export interface Cooldown {
 export interface Activities {
   name: "custom";
   state: string;
-  type: unknown;
+  type: any;
+}
+
+export interface Time {
+  name: string;
+  value: number;
 }

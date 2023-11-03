@@ -8,6 +8,9 @@ import {
 } from "npm:discord.js";
 import moment from "npm:moment";
 import Note from "../database/NoteModel.ts";
+import { config } from "../config.ts";
+import { changeToNumber } from "../util.ts";
+import RemindModel from "../database/RemindModel.ts";
 
 export const data = new SlashCommandBuilder()
   .setName("note")
@@ -38,6 +41,21 @@ export const data = new SlashCommandBuilder()
           )
           .setRequired(true)
       )
+      .addStringOption((option) =>
+        option
+          .setName("remind-me")
+          .setDescription(
+            "Remind me about this note in 1 hour or a different time"
+          )
+          .addChoices(
+            ...config.times.map((time: any) => {
+              return {
+                name: `${time.name}`,
+                value: `${time.value}`,
+              };
+            })
+          )
+      )
   )
   .addSubcommand((cmd) =>
     cmd
@@ -65,7 +83,7 @@ export const data = new SlashCommandBuilder()
       )
   );
 
-export async function run({ interaction, client, handler }: SlashCommandProps) {
+export async function run({ interaction }: SlashCommandProps) {
   await interaction.deferReply({ ephemeral: true });
   const command = await interaction.options.getSubcommand();
 
@@ -75,6 +93,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       const privacy = (await interaction.options.getString("privacy")) as
         | "public"
         | "private";
+      const remindAt = await interaction.options.getString("remind-me");
       let content: string;
 
       // Reply a message to ask for the content of the note
@@ -115,6 +134,15 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
             });
 
             await createANewNote.save();
+
+            if (remindAt) {
+              const newReminder = new RemindModel({
+                noteId: createANewNote.shortId,
+                remindAt: Date.now() + changeToNumber(remindAt as string),
+              });
+
+              console.log("Created a new reminder");
+            }
 
             // Reply to the user that the note has been created
             await interaction.editReply({
