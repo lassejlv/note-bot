@@ -248,7 +248,7 @@ export async function run({ interaction }: SlashCommandProps) {
       } else {
         const embed = new EmbedBuilder()
           .setDescription(
-            `**Are you sure you wan't to delete note?** ${note.title} (\`${note.shortId}\`)`
+            `**Are you sure you wan't to delete note?** ${note.title} (\`${note.shortId}\`)\n(*If you have created a backup, you can restore it later*)`
           )
           .setColor("Greyple");
 
@@ -279,7 +279,32 @@ export async function run({ interaction }: SlashCommandProps) {
         time: 60000,
       });
 
-      collector?.on("collect", async (i) => {});
+      collector?.on("collect", async (i) => {
+        switch (i.customId) {
+          case "cancel": {
+            await i.update({
+              content: `👍 Okay sir, i will not delete that note!`,
+              embeds: [],
+              components: [],
+            });
+
+            break;
+          }
+
+          case "confirm": {
+            // Delete the note
+            await Note.deleteOne({ shortId: id }).catch((err) =>
+              console.log("Failed to delete note")
+            );
+
+            await i.update({
+              content: `👍 Done sir, i have deleted the note!`,
+              embeds: [],
+              components: [],
+            });
+          }
+        }
+      });
 
       collector?.on("end", async (i, reason) => {
         console.log(reason);
