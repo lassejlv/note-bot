@@ -10,7 +10,7 @@ export const data: CommandData = {
   description: "Returns a list of all my commands",
 };
 
-export async function run({ interaction, client, handler }: SlashCommandProps) {
+export async function run({ interaction }: SlashCommandProps) {
   await interaction.deferReply();
   const commands = await interaction.client.application.commands.fetch();
 

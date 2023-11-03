@@ -141,6 +141,8 @@ export async function run({ interaction }: SlashCommandProps) {
                 remindAt: Date.now() + changeToNumber(remindAt as string),
               });
 
+              await newReminder.save();
+
               console.log("Created a new reminder");
             }
 

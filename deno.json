@@ -1,5 +1,5 @@
 {
   "tasks": {
-    "dev": "deno run --lock=deno.lock --allow-sys --allow-write --allow-net --allow-read --allow-env --watch src/main.ts",
+    "dev": "deno run --lock=deno.lock --allow-sys --allow-write --allow-net --allow-read --allow-env --watch src/main.ts"
   }
 }
