@@ -198,7 +198,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
               `
               )
               .setColor("Greyple")
-              .setFooter({text: "/note view id:<id>"}),
+              .setFooter({ text: "/note view id:<id>" }),
           ],
         });
       }
