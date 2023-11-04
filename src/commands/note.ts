@@ -81,6 +81,23 @@ export const data = new SlashCommandBuilder()
           .setDescription("The id of the note to delete")
           .setRequired(true)
       )
+  )
+  .addSubcommand((cmd) =>
+    cmd
+      .setName("edit")
+      .setDescription("Edit an note")
+      .addStringOption((option) =>
+        option
+          .setName("id")
+          .setDescription("The id of the note to edit")
+          .setRequired(true)
+      )
+      .addStringOption((option) =>
+        option
+          .setName("new-title")
+          .setDescription("The new title of the note")
+          .setRequired(false)
+      )
   );
 
 export async function run({ interaction }: SlashCommandProps) {
@@ -121,6 +138,9 @@ export async function run({ interaction }: SlashCommandProps) {
           } else {
             content = m.content;
 
+            // Delete the message
+            await m.delete();
+
             // End The Collector
             await collector.stop();
 
@@ -138,16 +158,15 @@ export async function run({ interaction }: SlashCommandProps) {
             if (remindAt) {
               const newReminder = new RemindModel({
                 noteId: createANewNote.shortId,
-                remindAt: Date.now() + changeToNumber(remindAt as string),
+                remindAt: Date.now() + changeToNumber(remindAt),
               });
 
               await newReminder.save();
-
-              console.log("Created a new reminder");
             }
 
             // Reply to the user that the note has been created
             await interaction.editReply({
+              content: "",
               embeds: [
                 new EmbedBuilder()
                   .setTitle("Note Created")
@@ -309,6 +328,79 @@ export async function run({ interaction }: SlashCommandProps) {
       collector?.on("end", async (i, reason) => {
         console.log(reason);
       });
+
+      break;
+    }
+    case "edit": {
+      const id = (await interaction.options.getString("id")) as string;
+      const note = await Note.findOne({ shortId: id });
+      if (!note) {
+        return interaction.editReply({
+          content: `🥱 Sorry sir, i can't find that note any where in my database!`,
+        });
+      } else if (note.discord_id !== interaction.user.id) {
+        return interaction.editReply({
+          content: `🥱 Sorry sir, but this note is not yours!!`,
+        });
+      } else {
+        let newTitle = (await interaction.options.getString(
+          "new-title"
+        )) as string;
+        if (!newTitle) {
+          newTitle = note.title;
+        } else {
+          await interaction.editReply({
+            content: `😀 Sir, please write your updated note below, you have 10 minutes!\n\n\`MAX 1000 characters\``,
+          });
+
+          const filter = (m: any) => m.author.id === interaction.user.id;
+          const collector = interaction.channel?.createMessageCollector({
+            filter,
+            time: 600000,
+          });
+
+          collector?.on("collect", async (m) => {
+            // Delete the message
+            await m.delete();
+
+            if (m.content.length > 1000) {
+              await interaction.followUp({
+                content: `👿 Sir did you not go to school? I said \`MAX 1000 characters.\``,
+              });
+            } else if (m.content.length < 3) {
+              await interaction.followUp({
+                content: `💀 Sir no one edits a note that are less than \`3 characters\``,
+              });
+            } else {
+              note.title = newTitle;
+              note.content = m.content;
+              await note.save();
+
+              // End The Collector
+              await collector.stop();
+
+              // Reply to the user that the note has been created
+              await interaction.editReply({
+                content: "",
+                embeds: [
+                  new EmbedBuilder()
+                    .setTitle("Note Edited")
+                    .setDescription(
+                      `Your note has been edited with the title **${newTitle}**\n\nUse \`/note view id:${
+                        note.shortId
+                      }\` to view your note (${
+                        note.privacy === "private"
+                          ? "Only you can view this note"
+                          : "Everyone can view this note"
+                      })`
+                    )
+                    .setColor("Greyple"),
+                ],
+              });
+            }
+          });
+        }
+      }
 
       break;
     }
