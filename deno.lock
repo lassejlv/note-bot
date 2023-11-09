@@ -1,5 +1,5 @@
 {
-  "version": "3",
+  "version": "2",
   "packages": {
     "specifiers": {
       "npm:commandkit": "npm:commandkit@0.1.6_discord.js@14.13.0",
