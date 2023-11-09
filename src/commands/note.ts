@@ -140,6 +140,11 @@ export async function run({ interaction }: SlashCommandProps) {
           } else {
             content = m.content;
 
+            if (content.length > 67108864) {
+              return interaction.followUp({
+                content: `👿 Sir did you not go to school? I said \`MAX 1000 characters.\``,
+              });
+            }
             // Delete the message
             await m.delete();
 

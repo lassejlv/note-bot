@@ -1,11 +1,12 @@
 {
-  "version": "2",
+  "version": "3",
   "packages": {
     "specifiers": {
       "npm:commandkit": "npm:commandkit@0.1.6_discord.js@14.13.0",
       "npm:create-next": "npm:create-next@0.1.4",
       "npm:croner": "npm:croner@7.0.4",
       "npm:discord.js": "npm:discord.js@14.13.0",
+      "npm:discord.js@latest": "npm:discord.js@14.13.0",
       "npm:moment": "npm:moment@2.29.4",
       "npm:mongoose": "npm:mongoose@8.0.0",
       "npm:new-website": "npm:new-website@1.7.1",
