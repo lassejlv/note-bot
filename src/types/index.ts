@@ -16,3 +16,9 @@ export interface Activities {
   state: string;
   type: any;
 }
+
+export type SelectMenu = {
+  label: string;
+  description: string;
+  value: string;
+};

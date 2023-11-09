@@ -18,11 +18,11 @@ export async function run({ interaction }: SlashCommandProps) {
     .setTitle("Help Menu")
     .setDescription(
       `Here are all my commands: \n${commands
-        .map((cmd) => {
+        .map((cmd: any) => {
           return `**/${cmd.name}**: \`${cmd.description}\` ${
             cmd.options.length > 2
               ? `\n${cmd.options
-                  .map((option) => {
+                  .map((option: any) => {
                     return `> **/${option.name}** - \`${option.description}\`\n`;
                   })
                   .join(" ")}`

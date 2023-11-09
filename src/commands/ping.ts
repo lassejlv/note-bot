@@ -10,7 +10,7 @@ export const data: CommandData = {
 };
 
 export function run({ interaction, client, handler }: SlashCommandProps) {
-  interaction.reply(`:ping_pong: Pong! ${client.ws.ping}ms`);
+  interaction.reply(`:ping_pong: Pong! ${client.ws.ping}mss`);
 }
 
 export const options: CommandOptions = {

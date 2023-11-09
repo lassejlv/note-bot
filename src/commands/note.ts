@@ -5,12 +5,14 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandBuilder,
-} from "npm:discord.js";
+  StringSelectMenuBuilder,
+} from "npm:discord.js@latest";
 import moment from "npm:moment";
 import Note from "../database/NoteModel.ts";
+import RemindModel from "../database/RemindModel.ts";
 import { config } from "../config.ts";
 import { changeToNumber } from "../util.ts";
-import RemindModel from "../database/RemindModel.ts";
+import { SelectMenu } from "../types/index.ts";
 
 export const data = new SlashCommandBuilder()
   .setName("note")
@@ -48,7 +50,7 @@ export const data = new SlashCommandBuilder()
             "Remind me about this note in 1 hour or a different time"
           )
           .addChoices(
-            ...config.times.map((time: any) => {
+            ...config.times.map((time) => {
               return {
                 name: `${time.name}`,
                 value: `${time.value}`,
@@ -171,9 +173,7 @@ export async function run({ interaction }: SlashCommandProps) {
                 new EmbedBuilder()
                   .setTitle("Note Created")
                   .setDescription(
-                    `Your note has been created with the title **${title}**\n\nUse \`/note view id:${
-                      createANewNote.shortId
-                    }\` to view your note (${
+                    `Your note has been created with the title **${title}**\n\nUse \`/note list\` to view your note (${
                       privacy === "private"
                         ? "Only you can view this note"
                         : "Everyone can view this note"
@@ -192,7 +192,7 @@ export async function run({ interaction }: SlashCommandProps) {
     }
     case "view": {
       const id = (await interaction.options.getString("id")) as string;
-      const note = await Note.findOne({ shortId: id });
+      const note = await Note.findOne({ shortId: id, privacy: "public" });
       if (!note) {
         return interaction.editReply({
           content: `🥱 Sorry sir, i can't find that note any where in my database!`,
@@ -236,21 +236,95 @@ export async function run({ interaction }: SlashCommandProps) {
             new EmbedBuilder()
               .setTitle(`Your Notes`)
               .setDescription(
-                `
-              ${notes
-                .map((note) => {
-                  return `**${note.title}** - \`${note.shortId}\` - ⏱ ${moment(
-                    note.createdAt
-                  ).fromNow()}\n`;
-                })
-                .join(" ")}
-              `
+                "Here is a list of your notes, sir! **(There are only shown 25 notes)**"
               )
               .setColor("Greyple")
               .setFooter({ text: "/note view id:<id>" }),
           ],
+          components: [
+            new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+              new StringSelectMenuBuilder()
+                .setCustomId("note-list")
+                .setPlaceholder("Select a note to view")
+                .addOptions(
+                  ...notes
+                    // max size 25
+                    .slice(0, 25)
+                    .map((note): SelectMenu => {
+                      return {
+                        label: note.title,
+                        description: `Created about ${moment(
+                          note.createdAt
+                        ).fromNow()}`,
+                        value: note.shortId,
+                      };
+                    })
+                )
+            ),
+          ],
         });
       }
+
+      // Collector to listen for the select menu
+      const filter = (i: any) => i.user.id === interaction.user.id;
+      const collector = interaction.channel?.createMessageComponentCollector({
+        filter,
+        time: 600000, // Set to 10 minutes
+      });
+
+      collector?.on("collect", async (i) => {
+        switch (i.customId) {
+          case "note-list": {
+            // @ts-ignore
+            const value = i.values[0];
+            const findNote = await Note.findOne({ shortId: value });
+            //
+
+            // @ts-ignore
+            if (!findNote) {
+              await i.update({
+                content: `🥱 Sorry sir, i can't find that note any where in my database!`,
+                embeds: [],
+                components: [],
+              });
+            } else {
+              const embed = new EmbedBuilder()
+                .setTitle(`Note - ${findNote.title}`)
+                .setDescription(`\`\`\`${findNote.content}\`\`\``)
+                .setFooter({
+                  text: `Created about ${moment(
+                    findNote.createdAt
+                  ).fromNow()} and was edited about ${moment(
+                    findNote.updatedAt
+                  ).fromNow()}`,
+                })
+                .setColor("Greyple");
+
+              try {
+                await i.update({
+                  ...(findNote.privacy === "public" && {
+                    content: `**🔗 Share this note using this cmd:** \`/note view id:${findNote.shortId}\``,
+                  }),
+                  embeds: [embed],
+                  components: [],
+                });
+              } catch (error) {
+                await interaction.followUp({
+                  ephemeral: true,
+                  content: `🥱 Sorry sir, i could not edit the message!`,
+                  embeds: [],
+                  components: [],
+                });
+              }
+            }
+          }
+        }
+      });
+
+      collector?.on("end", async (i, reason) => {
+        console.log(reason);
+      });
+
       break;
     }
     case "delete": {
@@ -312,7 +386,7 @@ export async function run({ interaction }: SlashCommandProps) {
 
           case "confirm": {
             // Delete the note
-            await Note.deleteOne({ shortId: id }).catch((err) =>
+            await Note.deleteOne({ shortId: id }).catch((err: any) =>
               console.log("Failed to delete note")
             );
 
@@ -325,7 +399,7 @@ export async function run({ interaction }: SlashCommandProps) {
         }
       });
 
-      collector?.on("end", async (i, reason) => {
+      collector?.on("end", async (i, reason: string) => {
         console.log(reason);
       });
 
@@ -386,9 +460,7 @@ export async function run({ interaction }: SlashCommandProps) {
                   new EmbedBuilder()
                     .setTitle("Note Edited")
                     .setDescription(
-                      `Your note has been edited with the title **${newTitle}**\n\nUse \`/note view id:${
-                        note.shortId
-                      }\` to view your note (${
+                      `Your note has been edited with the title **${newTitle}**\n\nUse \`/note list\` to view your note (${
                         note.privacy === "private"
                           ? "Only you can view this note"
                           : "Everyone can view this note"
