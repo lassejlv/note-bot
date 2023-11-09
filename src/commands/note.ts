@@ -10,6 +10,7 @@ import {
 import moment from "npm:moment";
 import Note from "../database/NoteModel.ts";
 import RemindModel from "../database/RemindModel.ts";
+import BackupModel from "../database/BackupModel.ts";
 import { config } from "../config.ts";
 import { changeToNumber } from "../util.ts";
 import { SelectMenu } from "../types/index.ts";
@@ -206,7 +207,47 @@ export async function run({ interaction }: SlashCommandProps) {
                 time: 180000,
               });
 
-            collectorBackup?.on("collect", async (i) => {});
+            collectorBackup?.on("collect", async (i) => {
+              switch (i.customId) {
+                case "create-backup": {
+                  try {
+                    const newBackup = new BackupModel({
+                      short_id: Math.random().toString(36).substr(2, 9),
+                      discord_id: interaction.user.id as string,
+                      note_id: createANewNote.shortId,
+                      title: createANewNote.title,
+                      content: createANewNote.content,
+                    });
+
+                    await newBackup.save();
+
+                    await i.update({
+                      content: `👍 Done sir, i have created a backup of your note!`,
+                      embeds: [],
+                      components: [],
+                    });
+
+                    // Attempt to send message to the user
+                    const user = await interaction.client.users.fetch(
+                      interaction.user.id as string
+                    );
+                    await user.send({
+                      embeds: [
+                        new EmbedBuilder()
+                          .setTitle("Backup Created")
+                          .setDescription(
+                            `A backup of your note has been created with the title **${title}**\n\nUse \`/backup list\` to view your backups. To load a backup, use \`/backup load id:${newBackup.short_id}\``
+                          )
+                          .setColor("Greyple"),
+                      ],
+                    });
+                  } catch (error) {
+                    console.log("Failed to create a backup");
+                    return;
+                  }
+                }
+              }
+            });
           }
         } catch (error) {
           console.log(error.message);
@@ -264,7 +305,9 @@ export async function run({ interaction }: SlashCommandProps) {
                 "Here is a list of your notes, sir! **(There are only shown 25 notes)**"
               )
               .setColor("Greyple")
-              .setFooter({ text: "/note view id:<id>" }),
+              .setFooter({
+                text: "Your Note ID will be shown when you select a note! (This will be changed in the feature)",
+              }),
           ],
           components: [
             new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
@@ -317,11 +360,9 @@ export async function run({ interaction }: SlashCommandProps) {
                 .setTitle(`Note - ${findNote.title}`)
                 .setDescription(`\`\`\`${findNote.content}\`\`\``)
                 .setFooter({
-                  text: `Created about ${moment(
-                    findNote.createdAt
-                  ).fromNow()} and was edited about ${moment(
+                  text: `Last Updated: ${moment(
                     findNote.updatedAt
-                  ).fromNow()}`,
+                  ).fromNow()} | ID: ${findNote.shortId}`,
                 })
                 .setColor("Greyple");
 
