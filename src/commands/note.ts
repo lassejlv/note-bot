@@ -181,7 +181,27 @@ export async function run({ interaction }: SlashCommandProps) {
                   )
                   .setColor("Greyple"),
               ],
+              components: [
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                  new ButtonBuilder()
+                    .setCustomId("create-backup")
+                    .setLabel("Create a backup")
+                    .setStyle(ButtonStyle.Secondary)
+                    .setDisabled(true)
+                    .setEmoji("📥")
+                ),
+              ],
             });
+
+            // Collector to listen for the button
+            const filter = (i: any) => i.user.id === interaction.user.id;
+            const collectorBackup =
+              interaction.channel?.createMessageComponentCollector({
+                filter,
+                time: 180000,
+              });
+
+            collectorBackup?.on("collect", async (i) => {});
           }
         } catch (error) {
           console.log(error.message);
