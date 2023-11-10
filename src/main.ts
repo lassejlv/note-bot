@@ -37,51 +37,51 @@ new CommandKit({
   bulkRegister: true,
 });
 
-// Cron Job
-setInterval(async () => {
-  // Cooldown Cron
-  const cooldowns = await CooldownModel.find({});
-  const now: number = Date.now();
+// // Cron Job
+// setInterval(async () => {
+//   // Cooldown Cron
+//   const cooldowns = await CooldownModel.find({});
+//   const now: number = Date.now();
 
-  cooldowns.forEach(async (cooldown: Cooldown) => {
-    if (cooldown.time < now) {
-      await CooldownModel.deleteOne({ discord_id: cooldown.discord_id });
-      Logger.info(`Cooldown for ${cooldown.discord_id} has been removed.`);
-    }
-  });
+//   cooldowns.forEach(async (cooldown: Cooldown) => {
+//     if (cooldown.time < now) {
+//       await CooldownModel.deleteOne({ discord_id: cooldown.discord_id });
+//       Logger.info(`Cooldown for ${cooldown.discord_id} has been removed.`);
+//     }
+//   });
 
-  // Note Reminder
-  const reminders = await RemindModel.find({});
-  if (reminders.length < 1) return;
-  reminders.forEach(async (reminder) => {
-    const note = await NoteModel.findOne({ shortId: reminder.noteId });
-    if (!note) return;
-    if (reminder.remindAt > Date.now()) return;
+//   // Note Reminder
+//   const reminders = await RemindModel.find({});
+//   if (reminders.length < 1) return;
+//   reminders.forEach(async (reminder) => {
+//     const note = await NoteModel.findOne({ shortId: reminder.noteId });
+//     if (!note) return;
+//     if (reminder.remindAt > Date.now()) return;
 
-    // Create the emebd
-    const embed = new EmbedBuilder()
-      .setTitle(`Reminder for note - ${note.title}`)
-      .setDescription(
-        `Here is your reminder for your note: ${note.title} \`(${note.shortId})\`\nTo view your note, use \`/note view id:${note.shortId}\``
-      )
-      .setColor("Greyple");
+//     // Create the emebd
+//     const embed = new EmbedBuilder()
+//       .setTitle(`Reminder for note - ${note.title}`)
+//       .setDescription(
+//         `Here is your reminder for your note: ${note.title} \`(${note.shortId})\`\nTo view your note, use \`/note view id:${note.shortId}\``
+//       )
+//       .setColor("Greyple");
 
-    // Send message to user
-    await client.users
-      .fetch(note.discord_id)
-      .then(async (user) => {
-        await user.send({ embeds: [embed] });
-        Logger.info(`Sent message to user: ${user.tag}`);
-      })
-      .catch((error) => {
-        Logger.error(`Failed to send message to user: ${error.message}`);
-      });
+//     // Send message to user
+//     await client.users
+//       .fetch(note.discord_id)
+//       .then(async (user) => {
+//         await user.send({ embeds: [embed] });
+//         Logger.info(`Sent message to user: ${user.tag}`);
+//       })
+//       .catch((error) => {
+//         Logger.error(`Failed to send message to user: ${error.message}`);
+//       });
 
-    // Delete the reminder
-    await RemindModel.deleteOne({ noteId: reminder.noteId }).catch((error) => {
-      Logger.error(`Failed to delete reminder: ${error.message}`);
-    });
-  });
-}, 2000);
+//     // Delete the reminder
+//     await RemindModel.deleteOne({ noteId: reminder.noteId }).catch((error) => {
+//       Logger.error(`Failed to delete reminder: ${error.message}`);
+//     });
+//   });
+// }, 2000);
 
 void client.login(Deno.env.get("TOKEN"));
