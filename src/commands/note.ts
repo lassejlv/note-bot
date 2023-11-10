@@ -269,35 +269,31 @@ export async function run({ interaction }: SlashCommandProps) {
     }
     case "view": {
       const id = (await interaction.options.getString("id")) as string;
-      const note = await Note.findOne({ shortId: id, privacy: "public" });
+      const note = await Note.findOne({ shortId: id }).catch((err) =>
+        console.log("Failed to find note in database.")
+      );
       const noteContent = await ContentModel.findOne({ note_id: id });
       if (!note) {
         return interaction.editReply({
           content: `🥱 Sorry sir, i can't find that note any where in my database!`,
         });
-      } else if (
-        note.privacy === "private" &&
-        interaction.user.id !== note.discord_id
-      ) {
+      } else if (note && note.privacy === "private") {
         return interaction.editReply({
-          content: `🔐 This note is private, and your are not author of this note!`,
+          content: `🥱 Sorry sir, but this note is private!`,
         });
       } else {
-        await interaction.editReply({
-          embeds: [
-            new EmbedBuilder()
-              .setTitle(`Note - ${note.title}`)
-              .setDescription(`\`\`\`${noteContent?.content}\`\`\``)
-              .setFooter({
-                text: `Created about ${moment(
-                  note.createdAt
-                ).fromNow()} and was edited about ${moment(
-                  note.updatedAt
-                ).fromNow()}`,
-              })
-              .setColor("Greyple"),
-          ],
-        });
+        await interaction
+          .editReply({
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(`Note - ${note.title}`)
+                .setDescription(`\`\`\`${noteContent?.content}\`\`\``)
+                .setColor("Greyple"),
+            ],
+          })
+          .catch((err) =>
+            console.log("Failed edit message, in view note command")
+          );
       }
 
       break;
