@@ -10,6 +10,7 @@ const contentSchema = new Schema(
       maxlength: 1000,
     },
     content: { type: String, required: true },
+    isBackup: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

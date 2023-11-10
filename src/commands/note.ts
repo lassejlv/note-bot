@@ -100,7 +100,7 @@ export const data = new SlashCommandBuilder()
         option
           .setName("new-title")
           .setDescription("The new title of the note")
-          .setRequired(false)
+          .setRequired(true)
       )
   );
 
@@ -222,16 +222,30 @@ export async function run({ interaction }: SlashCommandProps) {
               switch (i.customId) {
                 case "create-backup": {
                   try {
+                    // New Content Model
+                    const newContentBackup = new ContentModel({
+                      discord_id: interaction.user.id as string,
+                      short_id: Math.random().toString(36).substr(2, 9),
+                      note_id: createANewNote.shortId,
+                      content: newContent.content,
+                      isBackup: true,
+                    });
+
+                    await newContentBackup.save();
+
+                    // Creating the backup
                     const newBackup = new BackupModel({
                       short_id: Math.random().toString(36).substr(2, 9),
                       discord_id: interaction.user.id as string,
                       note_id: createANewNote.shortId,
+                      content_id: newContentBackup.short_id,
                       title: createANewNote.title,
-                      content: newContent.content,
                     });
 
+                    // Save the backup
                     await newBackup.save();
 
+                    // Reply to the user
                     await i.update({
                       content: `👍 Done sir, i have created a backup of your note!`,
                       embeds: [],
@@ -521,9 +535,14 @@ export async function run({ interaction }: SlashCommandProps) {
                 content: `💀 Sir no one edits a note that are less than \`3 characters\``,
               });
             } else {
-              note.title = newTitle;
-              note.content = m.content;
+              note.title = newTitle ?? note.title;
               await note.save();
+
+              // Update the note content
+              await ContentModel.updateOne(
+                { note_id: id },
+                { content: m.content }
+              ).catch((err) => console.log("Failed to update note content"));
 
               // End The Collector
               await collector.stop();
