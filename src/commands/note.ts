@@ -388,12 +388,7 @@ export async function run({ interaction }: SlashCommandProps) {
                   components: [],
                 });
               } catch (error) {
-                await interaction.followUp({
-                  ephemeral: true,
-                  content: `🥱 Sorry sir, i could not edit the message!`,
-                  embeds: [],
-                  components: [],
-                });
+                return;
               }
             }
           }
