@@ -5,7 +5,6 @@ const noteSchema = new Schema(
     shortId: { type: String, required: true, unique: true },
     discord_id: { type: String, required: true },
     title: { type: String, required: true },
-    content: { type: String, required: true },
     privacy: {
       type: String,
       required: true,

@@ -11,6 +11,7 @@ import moment from "npm:moment";
 import Note from "../database/NoteModel.ts";
 import RemindModel from "../database/RemindModel.ts";
 import BackupModel from "../database/BackupModel.ts";
+import ContentModel from "../database/ContentModel.ts";
 import { config } from "../config.ts";
 import { changeToNumber } from "../util.ts";
 import { SelectMenu } from "../types/index.ts";
@@ -157,12 +158,22 @@ export async function run({ interaction }: SlashCommandProps) {
               shortId: Math.random().toString(36).substr(2, 9),
               discord_id: interaction.user.id as string,
               title,
-              content,
               privacy: privacy ?? ("public" as string),
             });
 
             await createANewNote.save();
 
+            // Create a new note content
+            const newContent = new ContentModel({
+              discord_id: interaction.user.id as string,
+              short_id: Math.random().toString(36).substr(2, 9),
+              note_id: createANewNote.shortId,
+              content: content,
+            });
+
+            await newContent.save();
+
+            // Create a new reminder if it's provided
             if (remindAt) {
               const newReminder = new RemindModel({
                 noteId: createANewNote.shortId,
@@ -216,7 +227,7 @@ export async function run({ interaction }: SlashCommandProps) {
                       discord_id: interaction.user.id as string,
                       note_id: createANewNote.shortId,
                       title: createANewNote.title,
-                      content: createANewNote.content,
+                      content: newContent.content,
                     });
 
                     await newBackup.save();
@@ -259,6 +270,7 @@ export async function run({ interaction }: SlashCommandProps) {
     case "view": {
       const id = (await interaction.options.getString("id")) as string;
       const note = await Note.findOne({ shortId: id, privacy: "public" });
+      const noteContent = await ContentModel.findOne({ note_id: id });
       if (!note) {
         return interaction.editReply({
           content: `🥱 Sorry sir, i can't find that note any where in my database!`,
@@ -275,7 +287,7 @@ export async function run({ interaction }: SlashCommandProps) {
           embeds: [
             new EmbedBuilder()
               .setTitle(`Note - ${note.title}`)
-              .setDescription(`\`\`\`${note.content}\`\`\``)
+              .setDescription(`\`\`\`${noteContent?.content}\`\`\``)
               .setFooter({
                 text: `Created about ${moment(
                   note.createdAt
@@ -346,6 +358,7 @@ export async function run({ interaction }: SlashCommandProps) {
             // @ts-ignore
             const value = i.values[0];
             const findNote = await Note.findOne({ shortId: value });
+            const noteContent = await ContentModel.findOne({ note_id: value });
             //
 
             // @ts-ignore
@@ -358,7 +371,7 @@ export async function run({ interaction }: SlashCommandProps) {
             } else {
               const embed = new EmbedBuilder()
                 .setTitle(`Note - ${findNote.title}`)
-                .setDescription(`\`\`\`${findNote.content}\`\`\``)
+                .setDescription(`\`\`\`${noteContent?.content}\`\`\``)
                 .setFooter({
                   text: `Last Updated: ${moment(
                     findNote.updatedAt
@@ -454,6 +467,11 @@ export async function run({ interaction }: SlashCommandProps) {
             // Delete the note
             await Note.deleteOne({ shortId: id }).catch((err: any) =>
               console.log("Failed to delete note")
+            );
+
+            // Delete the note content
+            await ContentModel.deleteOne({ note_id: id }).catch((err: any) =>
+              console.log("Failed to delete note content")
             );
 
             await i.update({
