@@ -5,6 +5,7 @@
       "npm:commandkit": "npm:commandkit@0.1.6_discord.js@14.13.0",
       "npm:croner": "npm:croner@7.0.4",
       "npm:discord.js": "npm:discord.js@14.13.0",
+      "npm:discord.js@latest": "npm:discord.js@14.13.0",
       "npm:moment": "npm:moment@2.29.4",
       "npm:mongoose@latest": "npm:mongoose@8.0.0",
       "npm:term-logger": "npm:term-logger@1.2.2",
