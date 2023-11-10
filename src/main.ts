@@ -44,22 +44,23 @@ setInterval(async () => {
   const cooldowns = await CooldownModel.find({});
   const now: number = Date.now();
 
-  cooldowns.forEach(async (cooldown: Cooldown) => {
+  for (const cooldown of cooldowns) {
     if (cooldown.time < now) {
       await CooldownModel.deleteOne({ discord_id: cooldown.discord_id });
       Logger.info(`Cooldown for ${cooldown.discord_id} has been removed.`);
     }
-  });
+  }
 
   // Note Reminder
   const reminders = await RemindModel.find({});
   if (reminders.length < 1) return;
-  reminders.forEach(async (reminder) => {
-    const note = await NoteModel.findOne({ shortId: reminder.noteId });
-    if (!note) return;
-    if (reminder.remindAt > Date.now()) return;
 
-    // Create the emebd
+  for (const reminder of reminders) {
+    const note = await NoteModel.findOne({ shortId: reminder.noteId });
+    if (!note) continue; // Continue to the next iteration if note is not found
+    if (reminder.remindAt > Date.now()) continue; // Continue if the reminder time has not passed
+
+    // Create the embed
     const embed = new EmbedBuilder()
       .setTitle(`Reminder for note - ${note.title}`)
       .setDescription(
@@ -67,22 +68,20 @@ setInterval(async () => {
       )
       .setColor("Greyple");
 
-    // Send message to user
-    await client.users
-      .fetch(note.discord_id)
-      .then(async (user) => {
-        await user.send({ embeds: [embed] });
-        Logger.info(`Sent message to user: ${user.tag}`);
-      })
-      .catch((error) => {
-        Logger.error(`Failed to send message to user: ${error.message}`);
-      });
+    try {
+      // Send message to user
+      const user = await client.users.fetch(note.discord_id);
+      await user.send({ embeds: [embed] });
+      Logger.info(`Sent message to user: ${user.tag}`);
 
-    // Delete the reminder
-    await RemindModel.deleteOne({ noteId: reminder.noteId }).catch((error) => {
-      Logger.error(`Failed to delete reminder: ${error.message}`);
-    });
-  });
+      // Delete the reminder
+      await RemindModel.deleteOne({ noteId: reminder.noteId });
+      Logger.info(`Deleted reminder for note: ${note.title}`);
+    } catch (error) {
+      // Handle errors
+      Logger.error(`Error processing reminder: ${error.message}`);
+    }
+  }
 }, 2000);
 
 void client.login(Deno.env.get("TOKEN"));
