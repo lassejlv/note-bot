@@ -6,7 +6,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
   StringSelectMenuBuilder,
-} from "npm:discord.js@latest";
+} from "npm:discord.js";
 import moment from "npm:moment";
 import Note from "../database/NoteModel.ts";
 import RemindModel from "../database/RemindModel.ts";

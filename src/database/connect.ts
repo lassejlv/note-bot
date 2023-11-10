@@ -1,11 +1,11 @@
-import mongoose from "npm:mongoose";
+import mongoose from "npm:mongoose@latest";
 // @ts-ignore
-import { Logger } from "npm:term-logger@latest"
+import { Logger } from "npm:term-logger@latest";
 
 export const connectDatabase = async () => {
-  await mongoose.connect(Deno.env.get("DATABASE_URL") as string)
-  
+  await mongoose.connect(Deno.env.get("DATABASE_URL") as string);
+
   if (mongoose.connection.readyState === 1) {
-    Logger.success("Connected to database")
+    Logger.success("Connected to database");
   }
 };
