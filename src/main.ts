@@ -9,7 +9,6 @@ import {
 } from "npm:discord.js";
 import { CommandKit } from "npm:commandkit";
 import { connectDatabase } from "./database/connect.ts";
-import { Cron } from "npm:croner";
 import CooldownModel from "./database/CooldownModel.ts";
 import RemindModel from "./database/RemindModel.ts";
 import NoteModel from "./database/NoteModel.ts";
