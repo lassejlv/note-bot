@@ -39,7 +39,7 @@ new CommandKit({
 });
 
 // Cron Job
-const runEverySecond: Cron = new Cron("*/1 * * * * *", async () => {
+setInterval(async () => {
   // Cooldown Cron
   const cooldowns = await CooldownModel.find({});
   const now: number = Date.now();
@@ -83,6 +83,6 @@ const runEverySecond: Cron = new Cron("*/1 * * * * *", async () => {
       Logger.error(`Failed to delete reminder: ${error.message}`);
     });
   });
-});
+}, 2000);
 
 void client.login(Deno.env.get("TOKEN"));
