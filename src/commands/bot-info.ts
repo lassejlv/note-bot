@@ -46,14 +46,8 @@ export async function run({ interaction, client }: SlashCommandProps) {
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
       .setLabel("Support Server")
-      .setURL("https://discord.gg/orabot")
+      .setURL("https://discord.gg/4bh6tgj9K2")
       .setStyle(ButtonStyle.Link),
-    new ButtonBuilder()
-      .setEmoji("⭐")
-      .setLabel("Give a star on GitHub")
-      .setURL("https://github.com/lassejlv/note-bot")
-      .setStyle(ButtonStyle.Link)
-  );
 
   interaction.editReply({ embeds: [embed], components: [row] });
 }
