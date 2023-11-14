@@ -24,7 +24,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
   const embed = new EmbedBuilder()
     .setTitle("Bot Infomation")
     .setDescription(
-      "This bot is a simple bot that allows you to create notes with reminder and more!\nCheck out the github page, to learn to self-host the bot."
+      "This bot is a simple bot that allows you to create notes with reminders and more!"
     )
     .addFields([
       { name: "`Total Guild Size`", value: `${guildSize}`, inline: true },
