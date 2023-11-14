@@ -48,6 +48,7 @@ export async function run({ interaction, client }: SlashCommandProps) {
       .setLabel("Support Server")
       .setURL("https://discord.gg/4bh6tgj9K2")
       .setStyle(ButtonStyle.Link),
+    )
 
   interaction.editReply({ embeds: [embed], components: [row] });
 }
